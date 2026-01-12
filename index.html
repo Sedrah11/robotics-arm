@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Automated Meal Prep Line</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #0b1020;
+      font-family: Arial, sans-serif;
+    }
+
+    /* ================= HEADER ================= */
+    .header {
+      height: 100px;                 /* ⬅ increased to fit bigger logo */
+      background: #111827;
+      position: relative;
+    }
+
+    /* LOGO (ONLY CHANGE IS SIZE) */
+    .logo {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+
+      height: 90px;                  /* ⬅ BIGGER LOGO */
+      width: auto;
+      object-fit: contain;
+    }
+
+    .title {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 22px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* ================= STATUS ================= */
+    .status {
+      text-align: center;
+      color: #22c55e;
+      margin: 10px 0;
+      font-size: 14px;
+    }
+
+    /* ================= MAIN ================= */
+    .main {
+      width: 100%;
+      height: calc(100vh - 100px);   /* ⬅ matches header height */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* STREAM CONTAINER */
+    .stream-container {
+      width: 75%;
+      max-width: 1100px;
+      aspect-ratio: 16 / 9;
+      background: black;
+      border-radius: 14px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* STREAM IMAGE */
+    #stream {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <img src="/static/qss-logo1.png" alt="QSS Logo" class="logo">
+    <div class="title">Automated Meal Prep Line</div>
+  </header>
+
+  <!-- STATUS -->
+  <div class="status" id="status">Connecting to stream…</div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    <div class="stream-container">
+      <img id="stream" alt="Live Stream">
+    </div>
+  </div>
+
+  <!-- WEBSOCKET SCRIPT (UNCHANGED) -->
+  <script>
+    const statusEl = document.getElementById("status");
+    const imgEl = document.getElementById("stream");
+
+    console.log("🌐 Page loaded");
+    console.log("🌐 WS URL:", `ws://${location.host}/ws`);
+
+    const ws = new WebSocket(`ws://${location.host}/ws`);
+    ws.binaryType = "arraybuffer";
+
+    ws.onopen = () => {
+      console.log("✅ WS OPEN");
+      statusEl.textContent = "Live stream connected";
+    };
+
+    ws.onerror = (err) => {
+      console.error("❌ WS ERROR", err);
+      statusEl.textContent = "WebSocket error";
+    };
+
+    ws.onclose = () => {
+      console.warn("⚠️ WS CLOSED");
+      statusEl.textContent = "Disconnected";
+    };
+
+    ws.onmessage = (e) => {
+      const blob = new Blob([e.data], { type: "image/jpeg" });
+      const url = URL.createObjectURL(blob);
+      imgEl.src = url;
+      imgEl.onload = () => URL.revokeObjectURL(url);
+    };
+  </script>
+
+</body>
+</html>
